@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuestionario de Ciencias Sociales – Serie 4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+    background: #f0ebf8;
+    min-height: 100vh;
+    padding: 20px 0 60px;
+    color: #202124;
+  }
+  .container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+
+  .header-card {
+    background: #fff;
+    border-radius: 8px;
+    border-top: 10px solid #673ab7;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    padding: 24px 24px 20px;
+    margin-bottom: 12px;
+  }
+  .header-card h1 { font-size: 28px; font-weight: 400; color: #202124; margin-bottom: 8px; }
+  .header-card .subtitle { font-size: 14px; color: #5f6368; margin-bottom: 4px; }
+  .header-card .required-note {
+    font-size: 14px; color: #5f6368; margin-top: 12px;
+    padding-top: 12px; border-top: 1px solid #e0e0e0;
+  }
+  .required-note span { color: #d93025; }
+
+  .question-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    padding: 24px;
+    margin-bottom: 12px;
+    transition: border-left 0.15s;
+  }
+  .question-card:focus-within { border-left: 6px solid #673ab7; padding-left: 18px; }
+  .question-number { font-size: 12px; color: #5f6368; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .question-text { font-size: 15px; color: #202124; line-height: 1.6; margin-bottom: 16px; font-weight: 400; }
+  .question-context {
+    font-size: 13px; color: #5f6368; line-height: 1.6; margin-bottom: 14px;
+    padding: 10px 14px; background: #f8f9fa;
+    border-left: 3px solid #e0e0e0; border-radius: 0 4px 4px 0;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 4px; }
+  .option-label {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 12px; border-radius: 4px; cursor: pointer;
+    transition: background 0.1s; font-size: 14px; color: #202124; line-height: 1.5;
+  }
+  .option-label:hover { background: #f0ebf8; }
+  .option-label input[type="radio"] { margin-top: 2px; accent-color: #673ab7; width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; }
+  .option-label.selected { background: #f0ebf8; }
+  .option-letter { font-weight: 500; color: #5f6368; flex-shrink: 0; min-width: 18px; }
+
+  .submit-area {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 24px; gap: 16px; flex-wrap: wrap;
+  }
+  .btn-submit {
+    background: #673ab7; color: #fff; border: none; border-radius: 4px;
+    padding: 12px 32px; font-size: 15px; font-family: inherit; cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s; font-weight: 500;
+  }
+  .btn-submit:hover { background: #5e35b1; box-shadow: 0 2px 6px rgba(103,58,183,0.3); }
+  .btn-clear {
+    background: none; border: none; color: #673ab7; font-size: 14px;
+    cursor: pointer; font-family: inherit; padding: 8px 0; text-decoration: underline;
+  }
+  .btn-clear:hover { color: #5e35b1; }
+
+  .progress-bar-wrap { background: #e8eaf6; border-radius: 4px; height: 6px; margin: 16px 0 4px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #673ab7; border-radius: 4px; transition: width 0.3s; width: 0%; }
+  .progress-label { font-size: 12px; color: #5f6368; margin-bottom: 12px; }
+
+  .results-card {
+    background: #fff; border-radius: 8px; border-top: 10px solid #1e8e3e;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12); padding: 32px 24px;
+    margin-bottom: 12px; display: none; text-align: center;
+  }
+  .results-card h2 { font-size: 24px; font-weight: 400; color: #202124; margin-bottom: 8px; }
+  .score-circle {
+    width: 120px; height: 120px; border-radius: 50%; background: #e8f5e9;
+    border: 6px solid #1e8e3e; display: flex; align-items: center; justify-content: center;
+    margin: 24px auto; flex-direction: column;
+  }
+  .score-number { font-size: 32px; font-weight: 500; color: #1e8e3e; }
+  .score-total { font-size: 14px; color: #5f6368; }
+  .score-pct { font-size: 18px; color: #1e8e3e; font-weight: 500; margin-top: 4px; }
+  .btn-retry {
+    background: none; border: 1px solid #673ab7; color: #673ab7;
+    border-radius: 4px; padding: 10px 28px; font-size: 14px;
+    font-family: inherit; cursor: pointer; margin-top: 16px; transition: background 0.15s;
+  }
+  .btn-retry:hover { background: #f0ebf8; }
+
+  .option-label.correct-answer { background: #e8f5e9; }
+  .option-label.wrong-answer { background: #fce8e6; }
+
+  @media (max-width: 480px) {
+    .header-card h1 { font-size: 22px; }
+    .question-card { padding: 18px 16px; }
+    .question-card:focus-within { padding-left: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header-card">
+    <h1>Cuestionario de Ciencias Sociales</h1>
+    <div class="subtitle">Serie 4 &nbsp;·&nbsp; 42 preguntas &nbsp;·&nbsp; Selecciona una respuesta por pregunta</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-label" id="progressLabel">0 de 42 respondidas</div>
+    <div class="required-note"><span>*</span> Todas las preguntas son obligatorias</div>
+  </div>
+
+  <form id="quizForm">
+
+    <!-- Q1 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 1</div>
+      <div class="question-context">Para la politóloga Barbara Schröter, el clientelismo puede entenderse como una relación en la cual una persona que aspira a un cargo político utiliza su influencia y sus recursos para dar bienes, servicios, empleo o ciertas ventajas a otras personas, y así, recibir a cambio sus votos y apoyo político.</div>
+      <div class="question-text">Teniendo en cuenta esta definición, ¿por qué el clientelismo puede ser síntoma de debilidad en el funcionamiento de una democracia? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q1" value="A"><span class="option-letter">A.</span> Porque reduce significativamente la participación y el interés de los ciudadanos en las elecciones.</label>
+        <label class="option-label"><input type="radio" name="q1" value="B"><span class="option-letter">B.</span> Porque muestra que los ciudadanos tienen que negociar sus votos para acceder a los beneficios del Estado.</label>
+        <label class="option-label"><input type="radio" name="q1" value="C"><span class="option-letter">C.</span> Porque evidencia que las personas menos poderosas no pueden acceder al empleo y a otras ventajas.</label>
+        <label class="option-label"><input type="radio" name="q1" value="D"><span class="option-letter">D.</span> Porque muestra que los resultados electorales dependen de la calidad de las propuestas de los candidatos.</label>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 2</div>
+      <div class="question-context">Suponga que se realiza un debate político internacional para proponer soluciones a la problemática de la contaminación por plástico. En medio de este debate, el gobernante de uno de los países invitados propone que en todas las escuelas del mundo se den clases sobre manejo de residuos y cuidado de la naturaleza.</div>
+      <div class="question-text">¿Qué es lo que probablemente quiere lograr este gobernante con su propuesta? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q2" value="A"><span class="option-letter">A.</span> Que las empresas productoras de plásticos ya no sean responsables del manejo adecuado de residuos.</label>
+        <label class="option-label"><input type="radio" name="q2" value="B"><span class="option-letter">B.</span> Que los ciudadanos asuman un papel activo en el cuidado del medio ambiente.</label>
+        <label class="option-label"><input type="radio" name="q2" value="C"><span class="option-letter">C.</span> Que las escuelas dediquen menos tiempo a las clases en las que no se enseña a cuidar el ambiente.</label>
+        <label class="option-label"><input type="radio" name="q2" value="D"><span class="option-letter">D.</span> Que su país sea el principal encargado de dar solución a la contaminación por plásticos.</label>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 3</div>
+      <div class="question-context">En un país caribeño, hay varias montañas donde nacen múltiples cuencas fluviales. Ahora bien, el bosque cercano a uno de estos ríos está siendo deforestado por lugareños, quienes han iniciado trabajos agrícolas y ganaderos, lo cual ha generado un alto grado de contaminación en ciertas partes del río; peor aún, la extracción de materiales para la construcción, y la generación de abundantes desperdicios industriales y residuales, así como de agentes químicos, en combinación con desechos minerales y textiles, está causando que abundantes especies que habitan allí estén muriendo, por lo que ha ido mermando el caudal del río.</div>
+      <div class="question-text">¿Cuál es el factor que más incide en esta situación planteada? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q3" value="A"><span class="option-letter">A.</span> El factor cultural.</label>
+        <label class="option-label"><input type="radio" name="q3" value="B"><span class="option-letter">B.</span> El factor político.</label>
+        <label class="option-label"><input type="radio" name="q3" value="C"><span class="option-letter">C.</span> El factor económico.</label>
+        <label class="option-label"><input type="radio" name="q3" value="D"><span class="option-letter">D.</span> El factor ambiental.</label>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 4</div>
+      <div class="question-context">La comunidad cercana a una zona donde recientemente se inició un proyecto de minería, denunció ante el gobierno la contaminación de las fuentes de agua que abastecen la región. Esto, por el uso de materiales altamente contaminantes como el mercurio. Ante la denuncia, el Gobierno nacional decidió sancionar a la empresa encargada del proyecto y suspender la actividad minera en la zona hasta que cumpla con dos requisitos: (1) que cambie de lugar la explotación a una zona alejada de cualquier fuente de agua, y (2) que su maquinaria e instalaciones cumplan con altos estándares de calidad para prevenir la contaminación.</div>
+      <div class="question-text">Según lo anterior, ¿se puede afirmar que dicha sanción busca proteger el derecho de los ciudadanos a un ambiente sano? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q4" value="A"><span class="option-letter">A.</span> No, porque la explotación minera implica contaminación y daños irreversibles para el medio ambiente, así el Gobierno intente regularla.</label>
+        <label class="option-label"><input type="radio" name="q4" value="B"><span class="option-letter">B.</span> Sí, porque la explotación minera ha evolucionado y actualmente las empresas garantizan el desarrollo económico sin daño ambiental.</label>
+        <label class="option-label"><input type="radio" name="q4" value="C"><span class="option-letter">C.</span> No, porque el Gobierno puso en riesgo a la comunidad y los recursos hídricos de la región al no prohibir la explotación minera en todo el país.</label>
+        <label class="option-label"><input type="radio" name="q4" value="D"><span class="option-letter">D.</span> Sí, porque en este caso el Gobierno protegió los recursos naturales al suspender la extracción hasta que se garantice que no habrá contaminación.</label>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 5</div>
+      <div class="question-context">La intervención militar estadounidense de 1916 en República Dominicana no fue la única ocupación norteamericana que se presentó en América Central y el Caribe durante la primera mitad del siglo XX. Países como México, Cuba, Puerto Rico, Haití, Nicaragua y Panamá afrontaron algún tipo de conflicto, ocupación o intervención por parte de los Estados Unidos.</div>
+      <div class="question-text">¿Cuál de los siguientes factores explica la anterior problemática? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q5" value="A"><span class="option-letter">A.</span> La ubicación geográfica estratégica, porque Estados Unidos necesitaba controlar políticamente a sus países vecinos, ya que se hallaba fortaleciendo su poder imperialista.</label>
+        <label class="option-label"><input type="radio" name="q5" value="B"><span class="option-letter">B.</span> La importancia que adquirían las rutas comerciales entre los océanos Atlántico y Pacífico, algo que para Estados Unidos solo podía ofrecerle el control de Centroamérica.</label>
+        <label class="option-label"><input type="radio" name="q5" value="C"><span class="option-letter">C.</span> La abundante presencia de fuentes hídricas, porque Estados Unidos requería este tipo de recursos para superar las grandes sequías que vivió durante el siglo XX.</label>
+        <label class="option-label"><input type="radio" name="q5" value="D"><span class="option-letter">D.</span> La existencia de minas de oro en países de la región ya que, con las dos guerras mundiales y la crisis de 1929, Estados Unidos necesitaba aumentar sus finanzas.</label>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 6</div>
+      <div class="question-context">Considere los siguientes eventos de la historia nacional de República Dominicana: (1) Primera Ocupación Militar estadounidense, (2) Gobierno de Bosch, (3) Revolución de Abril, (4) Dictadura de Trujillo.</div>
+      <div class="question-text">El orden cronológico de estos eventos es: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q6" value="A"><span class="option-letter">A.</span> 1, 4, 2, 3.</label>
+        <label class="option-label"><input type="radio" name="q6" value="B"><span class="option-letter">B.</span> 3, 2, 4, 1.</label>
+        <label class="option-label"><input type="radio" name="q6" value="C"><span class="option-letter">C.</span> 4, 1, 3, 2.</label>
+        <label class="option-label"><input type="radio" name="q6" value="D"><span class="option-letter">D.</span> 2, 3, 1, 4.</label>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 7</div>
+      <div class="question-context">"El movimiento revolucionario en Dominicana ha tomado un curso trágico. Líderes comunistas, muchos de ellos entrenados en Cuba, observando una oportunidad para aumentar el desorden y ganar influencia, se han unido a la revolución. Han ido tomando un mayor control, y lo que comenzó como una revolución democrática, en poco tiempo cambió de dirección y se entregó en las manos de una banda de conspiradores comunistas. Varios de los líderes originales de la rebelión, los seguidores del actual presidente, se refugiaron en Embajadas extranjeras porque fueron reemplazados por fuerzas malévolas... La revolución estaba ahora en otras manos, y manos peligrosas".</div>
+      <div class="question-text">¿A qué evento en la historia de República Dominicana se refiere el fragmento anterior? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q7" value="A"><span class="option-letter">A.</span> A la Primera Ocupación Militar estadounidense.</label>
+        <label class="option-label"><input type="radio" name="q7" value="B"><span class="option-letter">B.</span> A la guerra de independencia.</label>
+        <label class="option-label"><input type="radio" name="q7" value="C"><span class="option-letter">C.</span> A la dictadura de Heureaux.</label>
+        <label class="option-label"><input type="radio" name="q7" value="D"><span class="option-letter">D.</span> A la Revolución de Abril.</label>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 8</div>
+      <div class="question-context">En una escuela del Distrito Nacional un grupo de estudiantes se niega a entrar al aula, debido a que el pánico se apodera de ellos, ya que dicen haber sentido un temblor de tierra y ver cómo se movían los objetos en su aula, por lo que no quieren poner sus vidas en riesgo. Al respecto, la profesora expresó no haber sentido el temblor y, además, el Centro Nacional de Sismología, que es la institución que verifica la ocurrencia de dichos fenómenos, no ha reportado ningún evento significativo en la zona durante los últimos días, por lo cual no hay confirmación de dicho evento.</div>
+      <div class="question-text">De acuerdo con la descripción anterior, ¿tiene razón la profesora en desconfiar de la información brindada por los estudiantes? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q8" value="A"><span class="option-letter">A.</span> No, porque los estudiantes pudieron haber sentido el temblor y la profesora no.</label>
+        <label class="option-label"><input type="radio" name="q8" value="B"><span class="option-letter">B.</span> Sí, porque el Centro Nacional de Sismología es la entidad competente para confirmar la veracidad de ese evento.</label>
+        <label class="option-label"><input type="radio" name="q8" value="C"><span class="option-letter">C.</span> No, porque tanto los estudiantes como la profesora pudieron sentir el temblor.</label>
+        <label class="option-label"><input type="radio" name="q8" value="D"><span class="option-letter">D.</span> Sí, porque la profesora es quien verifica si hubo temblor o no.</label>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 9</div>
+      <div class="question-context">En el 2018, la Organización de las Naciones Unidas (ONU), con base en un estudio sobre las condiciones de vida en 101 países, presentó un informe sobre pobreza multidimensional. De acuerdo con este informe, 1,300 millones de personas son pobres no solo porque tienen muy pocos ingresos monetarios, sino porque además, carecen de acceso a agua potable, electricidad, alimentos suficientes o servicios de salud. Con respecto a las razones por las que tantas personas están en condición de pobreza, hay quienes afirman que los pobres son pobres porque quieren o porque no han hecho lo necesario para dejar de serlo.</div>
+      <div class="question-text">Lo más probable es que alguien que afirme lo anterior crea que: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q9" value="A"><span class="option-letter">A.</span> las condiciones de vida de las personas dependen principalmente del talento y esfuerzo individual.</label>
+        <label class="option-label"><input type="radio" name="q9" value="B"><span class="option-letter">B.</span> los recursos en la sociedad están mal distribuidos y por eso no todos tienen las mismas oportunidades.</label>
+        <label class="option-label"><input type="radio" name="q9" value="C"><span class="option-letter">C.</span> las desventajas de algunos grupos poblacionales no se pueden superar solo con la voluntad de salir adelante.</label>
+        <label class="option-label"><input type="radio" name="q9" value="D"><span class="option-letter">D.</span> los bienes materiales sirven para satisfacer necesidades básicas, pero se requiere trabajar en otros aspectos para lograr el bienestar de las personas.</label>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 10</div>
+      <div class="question-context">"Los antecedentes de la Revolución francesa se pueden rastrear en el surgimiento de una burguesía cada vez más adinerada, que deseaba el poder político que hasta entonces concentraba la monarquía. Con este fin, la burguesía hizo alianzas temporales con capas sociales más pobres, que anhelaban mejores condiciones de vida, pese a que sus acciones le valieron fuertes críticas por parte de los sectores religiosos en el país".</div>
+      <div class="question-text">Según este fragmento, ¿entre quiénes podría darse un conflicto de intereses? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q10" value="A"><span class="option-letter">A.</span> Entre la burguesía y la monarquía.</label>
+        <label class="option-label"><input type="radio" name="q10" value="B"><span class="option-letter">B.</span> Entre las diferentes monarquías europeas.</label>
+        <label class="option-label"><input type="radio" name="q10" value="C"><span class="option-letter">C.</span> Entre los sectores religiosos y la monarquía.</label>
+        <label class="option-label"><input type="radio" name="q10" value="D"><span class="option-letter">D.</span> Entre las capas sociales más pobres y la burguesía.</label>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 11</div>
+      <div class="question-context">Una ciudad latinoamericana tiene serios problemas de movilidad. Por una parte, los dueños de vehículos motorizados insisten en que la infraestructura vial es insuficiente para la gran cantidad de vehículos que se desplaza por las calles. Por otra parte, un creciente grupo de ciudadanos que ha optado por movilizarse en bicicleta, consideran que no cuentan con vías adecuadas para desplazarse e insisten en que la ciudad no puede permitir el aumento indiscriminado de vehículos motorizados. Ante esta situación, el alcalde decide permitir que las bicicletas compartan con los vehículos motorizados los carriles que hasta entonces eran de uso exclusivo de los segundos.</div>
+      <div class="question-text">De acuerdo con esto, ¿a quién favorece la decisión del alcalde? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q11" value="A"><span class="option-letter">A.</span> A los ciclistas, pues la medida contribuye a reducir los accidentes viales.</label>
+        <label class="option-label"><input type="radio" name="q11" value="B"><span class="option-letter">B.</span> A los dueños de vehículos motorizados, pues la medida contribuye a regular el uso de este tipo de transporte.</label>
+        <label class="option-label"><input type="radio" name="q11" value="C"><span class="option-letter">C.</span> A los ciclistas, pues la medida contribuye a garantizar la disponibilidad de rutas para desplazarse.</label>
+        <label class="option-label"><input type="radio" name="q11" value="D"><span class="option-letter">D.</span> A los dueños de vehículos motorizados, pues la medida contribuye a reducir la contaminación.</label>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 12</div>
+      <div class="question-context">En un pequeño pueblo las corridas de toros se consideran una tradición. A estas corridas asiste, sobre todo, la gente adinerada del lugar. Aunque actualmente el pueblo presenta problemas presupuestales, el alcalde ha anunciado que se construirá una nueva plaza de toros para incentivar la continuación de la "fiesta brava". Sin embargo, esta postura tiene detractores: por un lado, hay otras obras que aún no se han terminado como la construcción de un hospital y de una nueva escuela. Por el otro, los defensores de animales consideran que hay tortura animal en las corridas de toros.</div>
+      <div class="question-text">Si el alcalde hace la plaza a pesar de los detractores, ¿a qué sector estaría beneficiando? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q12" value="A"><span class="option-letter">A.</span> Al sector más pobre, en la medida en la que estos requieren de entretenimiento.</label>
+        <label class="option-label"><input type="radio" name="q12" value="B"><span class="option-letter">B.</span> Al sector con más dinero del pueblo, pues valoran y disfrutan las actividades tradicionales.</label>
+        <label class="option-label"><input type="radio" name="q12" value="C"><span class="option-letter">C.</span> A todo el pueblo, porque la tradición hace parte de la identidad de todos los habitantes.</label>
+        <label class="option-label"><input type="radio" name="q12" value="D"><span class="option-letter">D.</span> A todo el pueblo, porque la tradición está por encima de la opinión de los defensores de animales.</label>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 13</div>
+      <div class="question-context">A finales del siglo XX, un país latinoamericano adoptó, mediante la aprobación de una nueva Constitución política, una forma de gobierno que les garantiza a los ciudadanos el derecho a incidir en las decisiones del Gobierno, en algunos casos mediante la elección de representantes y en otros de forma directa, mediante el uso de mecanismos especiales diseñados con este fin.</div>
+      <div class="question-text">De acuerdo con esta información, ¿qué forma de gobierno se adoptó en el país latinoamericano? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q13" value="A"><span class="option-letter">A.</span> Una democracia representativa.</label>
+        <label class="option-label"><input type="radio" name="q13" value="B"><span class="option-letter">B.</span> Una dictadura.</label>
+        <label class="option-label"><input type="radio" name="q13" value="C"><span class="option-letter">C.</span> Una democracia participativa.</label>
+        <label class="option-label"><input type="radio" name="q13" value="D"><span class="option-letter">D.</span> Una monarquía.</label>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 14</div>
+      <div class="question-context">En una comunidad rural de la República Dominicana un grupo de empresarios tiene la intención de explotar un área protegida, sin tomar en cuenta las consecuencias ambientales. Los empresarios y los comerciantes de la región justifican que esto desarrollaría económicamente la comunidad. Por otro lado, los ambientalistas plantean que dicha explotación pondría en peligro las fuentes de agua de todo el territorio nacional y los líderes de la comunidad expresan su oposición al proyecto porque afectaría la siembra de sus cultivos.</div>
+      <div class="question-text">De acuerdo con la situación, se puede dar un conflicto de intereses entre: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q14" value="A"><span class="option-letter">A.</span> líderes de la comunidad que reclaman la propiedad de las tierras y comerciantes que defienden el desarrollo económico.</label>
+        <label class="option-label"><input type="radio" name="q14" value="B"><span class="option-letter">B.</span> empresarios que buscan el desarrollo económico y ambientalistas que defienden las fuentes de agua.</label>
+        <label class="option-label"><input type="radio" name="q14" value="C"><span class="option-letter">C.</span> comerciantes que buscan cuidar la agricultura de la región y empresarios que buscan su beneficio personal.</label>
+        <label class="option-label"><input type="radio" name="q14" value="D"><span class="option-letter">D.</span> líderes de la comunidad que se oponen al desarrollo económico y empresarios que buscan el crecimiento de la región.</label>
+      </div>
+    </div>
+
+    <!-- Q15 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 15</div>
+      <div class="question-context">Recientemente, una organización internacional publicó un listado de países según el desempeño de sus estudiantes en una prueba académica. Un país latinoamericano se ubicó en el puesto 63 de 65 países evaluados. Para darle solución a esta situación, el Gobierno propuso enfocar la política educativa en mejorar la calidad de la educación en los diferentes niveles y asegurar que todos los niños asistan a las escuelas. Por su parte, un país europeo bajó unos puestos en las mismas pruebas, ubicándose en el puesto 25. Frente a esta situación, el Gobierno de ese país ha anunciado una reforma a la educación en los sectores menos favorecidos, para mejorar su desempeño.</div>
+      <div class="question-text">Ambos gobiernos buscan tomar medidas para mejorar sus resultados, ¿cuál de las siguientes afirmaciones expone las diferencias en las medidas propuestas? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q15" value="A"><span class="option-letter">A.</span> La medida propuesta por el país europeo se enfoca en los estudiantes; la del país latinoamericano no lo hace.</label>
+        <label class="option-label"><input type="radio" name="q15" value="B"><span class="option-letter">B.</span> La medida del país europeo se concentra en un grupo específico de la población estudiantil, la del país latinoamericano no lo hace.</label>
+        <label class="option-label"><input type="radio" name="q15" value="C"><span class="option-letter">C.</span> El gobierno del país europeo no está preocupado por mejorar su puntaje en las pruebas; el país latinoamericano sí.</label>
+        <label class="option-label"><input type="radio" name="q15" value="D"><span class="option-letter">D.</span> Como el puntaje del país europeo es más alto, las medidas previstas son menos importantes que las del país latinoamericano.</label>
+      </div>
+    </div>
+
+    <!-- Q16 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 16</div>
+      <div class="question-context">Luego de perder un partido de fútbol que había sido arbitrado por una mujer, un jugador hizo la siguiente afirmación: "No todos los árbitros son justos y en especial si son mujeres. Aun si están certificadas para ser árbitros, es mejor que atiendan las labores del hogar. La mujer está para cocinar, para servir al hombre, no para andar metida en el fútbol".</div>
+      <div class="question-text">¿Cuál de los siguientes enunciados NO contiene un prejuicio sobre las mujeres? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q16" value="A"><span class="option-letter">A.</span> Las mujeres que son árbitros no son justas.</label>
+        <label class="option-label"><input type="radio" name="q16" value="B"><span class="option-letter">B.</span> Las mujeres están para servir al hombre.</label>
+        <label class="option-label"><input type="radio" name="q16" value="C"><span class="option-letter">C.</span> Las mujeres deben atender las labores del hogar.</label>
+        <label class="option-label"><input type="radio" name="q16" value="D"><span class="option-letter">D.</span> Las mujeres se certifican para ser árbitros.</label>
+      </div>
+    </div>
+
+    <!-- Q17 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 17</div>
+      <div class="question-context">En la actualidad, los medios de comunicación internacionales dan cuenta del constante surgimiento de problemáticas ambientales. Por ejemplo, han expuesto que hay una baja en la producción agroindustrial azucarera en Guatemala, El Salvador, Honduras, Nicaragua y Panamá. Al respecto, el Gobierno panameño informó que, por la falta de agua en los lagos artificiales que alimentan el canal, limitarían el calado de los barcos. Por otro lado, Guatemala perdió 450 hectáreas de bosques a raíz de incendios forestales; en Nicaragua, desaparecieron una decena de ríos que desembocaban en el lago Cocibolca. Y en Costa Rica, aumentaron los problemas de abastecimiento de agua en Guanacaste.</div>
+      <div class="question-text">De acuerdo con la información anterior, ¿qué factor en común tienen ambas problemáticas? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q17" value="A"><span class="option-letter">A.</span> La falta de canales de flujo de agua de lagunas a ríos.</label>
+        <label class="option-label"><input type="radio" name="q17" value="B"><span class="option-letter">B.</span> La escasez de agua en algunos países de Centroamérica.</label>
+        <label class="option-label"><input type="radio" name="q17" value="C"><span class="option-letter">C.</span> El crecimiento poblacional en países pequeños en territorio.</label>
+        <label class="option-label"><input type="radio" name="q17" value="D"><span class="option-letter">D.</span> El auge de actividades económicas que mejoran la producción.</label>
+      </div>
+    </div>
+
+    <!-- Q18 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 18</div>
+      <div class="question-context">Considere los siguientes fragmentos sobre las intervenciones militares de los Estados Unidos en República Dominicana durante el siglo XX: "La dependencia financiera del país y la morosidad en el pago a los acreedores impulsaron al presidente Wilson, en 1916, a ocupar el territorio dominicano durante ocho años, estableciendo un gobierno militar que implantó la censura y el Estado de guerra". "Más de cuarenta buques bloquearon República Dominicana y unos 42,000 soldados y marines estuvieron involucrados en las operaciones. El desembarco de 20,000 marines se produjo en la noche del 28 de abril de 1965. Los norteamericanos entronizaron en el cargo a Imbert, pronto conocido como 'el carnicero de Santo Domingo'".</div>
+      <div class="question-text">De acuerdo con los dos textos, ¿qué elemento común se puede identificar en ambos momentos del intervencionismo norteamericano en República Dominicana? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q18" value="A"><span class="option-letter">A.</span> Las intervenciones militares se justificaban por el endeudamiento de República Dominicana.</label>
+        <label class="option-label"><input type="radio" name="q18" value="B"><span class="option-letter">B.</span> A las intervenciones militares siguieron sistemas democráticos y participativos.</label>
+        <label class="option-label"><input type="radio" name="q18" value="C"><span class="option-letter">C.</span> Las intervenciones militares se realizaron para imponer la democracia.</label>
+        <label class="option-label"><input type="radio" name="q18" value="D"><span class="option-letter">D.</span> A las intervenciones militares siguieron regímenes autoritarios.</label>
+      </div>
+    </div>
+
+    <!-- Q19 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 19</div>
+      <div class="question-context">El siguiente es un fragmento de un discurso pronunciado el 27 de febrero de 1963: "El doctor Segundo Armando González Tamayo y yo acabamos de jurar que desde nuestros cargos de vicepresidente y presidente de la República cumpliremos y haremos cumplir la Constitución y las leyes que nos gobiernan; y decimos con propiedad que nos gobiernan, porque en una democracia no debe haber más gobierno que el de las leyes. Solicitamos del Congreso Nacional las leyes indispensables para afirmar que en este país no solo hay democracia política, sino democracia económica y justicia social".</div>
+      <div class="question-text">Este discurso fue pronunciado por: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q19" value="A"><span class="option-letter">A.</span> Rafael Leónidas Trujillo, durante su juramentación como presidente de República Dominicana.</label>
+        <label class="option-label"><input type="radio" name="q19" value="B"><span class="option-letter">B.</span> Juan Bosch, durante su juramentación como presidente de República Dominicana.</label>
+        <label class="option-label"><input type="radio" name="q19" value="C"><span class="option-letter">C.</span> Joaquín Balaguer, durante su juramentación como presidente de República Dominicana.</label>
+        <label class="option-label"><input type="radio" name="q19" value="D"><span class="option-letter">D.</span> Antonio Guzmán Fernández, durante su juramentación como presidente de República Dominicana.</label>
+      </div>
+    </div>
+
+    <!-- Q20 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 20</div>
+      <div class="question-context">En el año 2019, se realizó un informe a petición del Consejo de Derechos Humanos de las Naciones Unidas (ONU), organización que no pertenece a ningún Gobierno y que se creó para mantener la paz y seguridad internacional. Dicho informe se basa en más de 500 entrevistas con víctimas y testigos de violaciones de derechos humanos, además de miembros del Gobierno de Venezuela. Allí, se detalla la militarización de las instituciones del Estado en Venezuela durante la última década y se afirma que hasta el 2019 había 793 personas privadas arbitrariamente de la libertad, entre ellas 58 mujeres. Frente a esto, la respuesta del gobierno en cabeza de su presidente, fue afirmar que se trataba de un informe "cargado de mentiras, de manipulaciones, de datos inexactos, de datos falsos que solo quieren engañar a la población y a los ciudadanos de otros países".</div>
+      <div class="question-text">A partir de la información anterior, es posible inferir que el documento presentado por la ONU es: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q20" value="A"><span class="option-letter">A.</span> poco confiable, porque la ONU es una entidad internacional que no pertenece a Venezuela, lo que supone no tener información confiable de primera mano.</label>
+        <label class="option-label"><input type="radio" name="q20" value="B"><span class="option-letter">B.</span> confiable, porque la ONU es una organización con capacidad de recolección de datos que muestran la realidad de los países.</label>
+        <label class="option-label"><input type="radio" name="q20" value="C"><span class="option-letter">C.</span> poco confiable, porque la ONU no tiene el aval del Gobierno de Venezuela, el cual tiene información de primera mano sobre lo que pasa en su país.</label>
+        <label class="option-label"><input type="radio" name="q20" value="D"><span class="option-letter">D.</span> confiable, porque los informes internacionales tienen mayor difusión en los medios de comunicación y las redes sociales.</label>
+      </div>
+    </div>
+
+    <!-- Q21 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 21</div>
+      <div class="question-context">A inicios de 2017, debido al creciente número de denuncias de niños que habían sido víctimas de abusos relacionados con redes sociales en un país latinoamericano, se presentaron las siguientes posturas: La directora de una entidad pública dedicada a proteger los derechos de los niños propuso prohibir el uso de teléfonos inteligentes por parte de niños menores de 14 años y también sugirió que los padres debían actualizarse en el mundo digital y hacer un acompañamiento a sus hijos. Un ejecutivo de una empresa de tecnología opinó que la decisión de entregarle un celular a un niño le corresponde a los padres y no al Estado, y que los celulares también tienen fines educativos. Un investigador de seguridad informática afirmó que es fundamental la confianza y advertir a los niños sobre las situaciones de riesgo para disminuir su vulnerabilidad.</div>
+      <div class="question-text">Se puede afirmar que las tres posiciones comparten la idea de que: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q21" value="A"><span class="option-letter">A.</span> los riesgos a los que se enfrentan los niños con los celulares justifican su prohibición.</label>
+        <label class="option-label"><input type="radio" name="q21" value="B"><span class="option-letter">B.</span> es el Estado el que tiene la responsabilidad de proteger a los niños en situaciones de riesgo tecnológico.</label>
+        <label class="option-label"><input type="radio" name="q21" value="C"><span class="option-letter">C.</span> el acompañamiento de los padres al uso de dispositivos tecnológicos es fundamental.</label>
+        <label class="option-label"><input type="radio" name="q21" value="D"><span class="option-letter">D.</span> la prohibición de tecnologías entra en conflicto con los usos educativos que pueden tener.</label>
+      </div>
+    </div>
+
+    <!-- Q22 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 22</div>
+      <div class="question-context">"Todo ser sabe que el agua es un recurso agotable y que, como media isla, debemos preservarlo a toda costa. De lo contrario, en el mediano y largo plazo no tendremos nada y el polvo de los tiempos nos bañará y refrescará en sustitución del agua. Podemos comenzar declarando crimen toda tala indiscriminada, los lavaderos de carros en las calles, el despilfarro del líquido en las construcciones, y varias acciones superfluas que en nada benefician a las poblaciones". — Aquino, S. (2019). El Caribe.</div>
+      <div class="question-text">De los siguientes comportamientos, ¿cuáles son de esperarse por parte de un ciudadano que coincide con lo que dice el autor del fragmento anterior? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q22" value="A"><span class="option-letter">A.</span> Implementar un sistema de reciclaje en lugares públicos que disminuya la cantidad de basuras.</label>
+        <label class="option-label"><input type="radio" name="q22" value="B"><span class="option-letter">B.</span> Regular la tala de árboles para que se realice solamente en zonas que tengan demasiados árboles.</label>
+        <label class="option-label"><input type="radio" name="q22" value="C"><span class="option-letter">C.</span> Lavar los vehículos en lugares alejados de las ciudades y promover el ahorro de agua en su población.</label>
+        <label class="option-label"><input type="radio" name="q22" value="D"><span class="option-letter">D.</span> Promover el ahorro de agua en su población y cuidar la vegetación cercana a los recursos hídricos.</label>
+      </div>
+    </div>
+
+    <!-- Q23 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 23</div>
+      <div class="question-context">En medio de una crisis económica y social, miles de personas han salido a protestar pacíficamente solicitándole al Gobierno nacional medidas urgentes para solucionar los problemas que afectan a los ciudadanos. Los medios de comunicación han transmitido públicamente las protestas; sin embargo, el Gobierno afirma que la transmisión de las protestas afecta el funcionamiento del Estado y, por ello, expidió un decreto prohibiéndoles a los canales de televisión y periódicos informar sobre las protestas. El Tribunal Constitucional se pronunció afirmando que esta medida es contraria al artículo 49 de la Constitución que garantiza la libertad de expresión e información, y derogó este decreto por inconstitucional.</div>
+      <div class="question-text">¿El gobierno nacional está en la obligación de acatar la decisión del Tribunal Constitucional? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q23" value="A"><span class="option-letter">A.</span> No, porque el Poder Judicial está subordinado al Poder Ejecutivo.</label>
+        <label class="option-label"><input type="radio" name="q23" value="B"><span class="option-letter">B.</span> No, porque el Poder Judicial no puede interferir ni cuestionar las decisiones y medidas del Poder Ejecutivo.</label>
+        <label class="option-label"><input type="radio" name="q23" value="C"><span class="option-letter">C.</span> Sí, porque el Poder Judicial está por encima del Poder Ejecutivo.</label>
+        <label class="option-label"><input type="radio" name="q23" value="D"><span class="option-letter">D.</span> Sí, porque el Poder Judicial puede ejercer control sobre las decisiones del Poder Ejecutivo que afecten la Constitución.</label>
+      </div>
+    </div>
+
+    <!-- Q24 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 24</div>
+      <div class="question-context">Una empresa minera está utilizando un método de extracción que afecta negativamente los cultivos de caña. La empresa afirma que, aunque el método es riesgoso, se podría estabilizar la economía de la región; sin embargo, los pobladores manifiestan que los cultivos de caña son la actividad económica principal y, en ese sentido, es necesario que la empresa deje de implementar métodos que pongan en riesgo sus cultivos. Ante esto, el Gobierno propone una solución: la empresa podrá seguir utilizando los métodos de extracción y en caso de afectar los cultivos, ofrecerá empleos a los pobladores afectados para subsanar su situación económica.</div>
+      <div class="question-text">De acuerdo con la anterior información, la solución implementada por el Gobierno se ajusta a los intereses de: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q24" value="A"><span class="option-letter">A.</span> la empresa, porque podrá obtener más empleados si afecta los cultivos de caña de la región.</label>
+        <label class="option-label"><input type="radio" name="q24" value="B"><span class="option-letter">B.</span> los pobladores, pues la empresa generará una mayor estabilidad económica en la región.</label>
+        <label class="option-label"><input type="radio" name="q24" value="C"><span class="option-letter">C.</span> la empresa, porque podrá seguir utilizando su método de extracción en la región.</label>
+        <label class="option-label"><input type="radio" name="q24" value="D"><span class="option-letter">D.</span> los pobladores, pues obtendrán beneficios si la empresa afecta sus cosechas.</label>
+      </div>
+    </div>
+
+    <!-- Q25 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 25</div>
+      <div class="question-context">El socialismo histórico es un sistema social en el que se establece un gobierno de la clase trabajadora sobre el resto de la sociedad, expropiando los medios de producción a las clases altas con poder, pasándolos a ser propiedad social controlada por el Estado. En el socialismo histórico, la economía es rígidamente planificada por el Estado.</div>
+      <div class="question-text">En el siglo XX, el socialismo histórico permite explicar el modelo político y económico de: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q25" value="A"><span class="option-letter">A.</span> Alemania Occidental.</label>
+        <label class="option-label"><input type="radio" name="q25" value="B"><span class="option-letter">B.</span> La Unión Soviética.</label>
+        <label class="option-label"><input type="radio" name="q25" value="C"><span class="option-letter">C.</span> Los Estados Unidos.</label>
+        <label class="option-label"><input type="radio" name="q25" value="D"><span class="option-letter">D.</span> Japón.</label>
+      </div>
+    </div>
+
+    <!-- Q26 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 26</div>
+      <div class="question-context">Los miembros de una comunidad campesina cercana a una cuenca lacustre que ha sido afectada por el desbordamiento significativo del caudal del lago, y cuyas tierras han sido inundadas por las saladas aguas, se han movilizado para exigirle al Gobierno que atienda a sus necesidades en cuanto a ayuda económica y reubicación en otros espacios, a través de huelgas pacíficas, marchas y concentraciones frente a instituciones gubernamentales.</div>
+      <div class="question-text">Esta situación se puede definir como: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q26" value="A"><span class="option-letter">A.</span> Mitin político.</label>
+        <label class="option-label"><input type="radio" name="q26" value="B"><span class="option-letter">B.</span> Protesta social.</label>
+        <label class="option-label"><input type="radio" name="q26" value="C"><span class="option-letter">C.</span> Movimiento obrero.</label>
+        <label class="option-label"><input type="radio" name="q26" value="D"><span class="option-letter">D.</span> Asociación profesional.</label>
+      </div>
+    </div>
+
+    <!-- Q27 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 27</div>
+      <div class="question-context">Un municipio rural tiene graves problemas de acceso al agua potable en la actualidad. Hace diez años, el gobierno local destinó los recursos necesarios para construir un acueducto que garantizaría el servicio de agua a toda la población. Este debía inaugurarse dos años después de iniciada su construcción. Al día de hoy, la obra no ha terminado y se encuentra detenida porque los materiales usados en la construcción del acueducto son de baja calidad, y la empresa constructora desvió parte del dinero del acueducto para pagar sobornos a los políticos que les adjudicaron el contrato.</div>
+      <div class="question-text">¿Qué factor ha incidido en la configuración de esta problemática de acceso al agua potable? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q27" value="A"><span class="option-letter">A.</span> La escasez de agua en el lugar.</label>
+        <label class="option-label"><input type="radio" name="q27" value="B"><span class="option-letter">B.</span> La falta de dinero del municipio.</label>
+        <label class="option-label"><input type="radio" name="q27" value="C"><span class="option-letter">C.</span> La corrupción en las obras públicas.</label>
+        <label class="option-label"><input type="radio" name="q27" value="D"><span class="option-letter">D.</span> La falta de interés del Gobierno local.</label>
+      </div>
+    </div>
+
+    <!-- Q28 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 28</div>
+      <div class="question-context">Ante los alarmantes niveles de contaminación de un río cercano a una ciudad principal, el alcalde decidió aplicar un plan de descontaminación progresiva del río. Para esto, les solicitó a los habitantes que viven cerca al río que apoyaran a los funcionarios en la ejecución de actividades de recuperación y capacitación, como, por ejemplo, jornadas comunitarias de reciclaje.</div>
+      <div class="question-text">La solicitud del alcalde está amparada en la Constitución, porque: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q28" value="A"><span class="option-letter">A.</span> el Estado puede obligar a los ciudadanos a que obedezcan cualquier tipo de instrucción, cuando lo estime conveniente.</label>
+        <label class="option-label"><input type="radio" name="q28" value="B"><span class="option-letter">B.</span> la alcaldía debe registrar un porcentaje mínimo de participación ciudadana en las actividades de recuperación del medio ambiente.</label>
+        <label class="option-label"><input type="radio" name="q28" value="C"><span class="option-letter">C.</span> los funcionarios públicos tienen el derecho de comunicar proyectos ambientales entre los ciudadanos como estrategia política.</label>
+        <label class="option-label"><input type="radio" name="q28" value="D"><span class="option-letter">D.</span> los ciudadanos tienen el deber de proteger los recursos naturales del país, garantizando la conservación de un ambiente limpio y sano.</label>
+      </div>
+    </div>
+
+    <!-- Q29 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 29</div>
+      <div class="question-context">En una ciudad costera, unos trabajadores se encargaban de mantener las playas limpias, recogiendo los desechos e incinerándolos. Este proceso de eliminación de basuras no está prohibido por el Gobierno, pero es altamente contaminante. Por lo cual, el alcalde de dicha ciudad decidió contratar a una empresa privada que prometió integrar a los trabajadores para implementar métodos como los rellenos sanitarios o vertederos controlados, que consisten en enterrar los desechos en la tierra, y como el compostaje, que reduce los desechos orgánicos al convertirlos en abono.</div>
+      <div class="question-text">Un efecto NO deseado de la decisión del alcalde sería: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q29" value="A"><span class="option-letter">A.</span> que los métodos implementados por la empresa no reduzcan a la mitad los niveles de contaminación causados por la incineración.</label>
+        <label class="option-label"><input type="radio" name="q29" value="B"><span class="option-letter">B.</span> que en la ciudad se generen más desechos orgánicos, debido a que el compostaje es un método efectivo para generar abono.</label>
+        <label class="option-label"><input type="radio" name="q29" value="C"><span class="option-letter">C.</span> que se contamine la tierra en varios sectores de la región, debido a los residuos tóxicos que llegarían a los rellenos sanitarios o vertederos controlados.</label>
+        <label class="option-label"><input type="radio" name="q29" value="D"><span class="option-letter">D.</span> que los trabajadores no se integren a la empresa porque no están de acuerdo con los rellenos sanitarios o vertederos controlados.</label>
+      </div>
+    </div>
+
+    <!-- Q30 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 30</div>
+      <div class="question-context">Existen diferentes tipos o ramas del budismo y una de ellas es la mahayana, que se fundamenta en las enseñanzas de una guía más que de una doctrina. Su objetivo principal es desentrañar la verdad mediante el razonamiento y la crítica, cuestionando las teorías del pasado.</div>
+      <div class="question-text">¿Cuál afirmación es más afín con el fragmento anterior? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q30" value="A"><span class="option-letter">A.</span> La promoción de la doctrina del budismo como única fuente de conocimiento.</label>
+        <label class="option-label"><input type="radio" name="q30" value="B"><span class="option-letter">B.</span> El budismo se centra en criticar las religiones del pasado.</label>
+        <label class="option-label"><input type="radio" name="q30" value="C"><span class="option-letter">C.</span> El budismo busca la verdad mediante la reflexión y el cuestionamiento.</label>
+        <label class="option-label"><input type="radio" name="q30" value="D"><span class="option-letter">D.</span> En el budismo se busca la verdad pensando en el presente sin considerar el pasado.</label>
+      </div>
+    </div>
+
+    <!-- Q31 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 31</div>
+      <div class="question-context">Un hombre es acusado de violar a una mujer. El abogado del acusado argumenta en su defensa: que en el país cada media hora una mujer es víctima de violencia sexual y, aproximadamente, por cada hombre víctima de violencia sexual hay cinco víctimas mujeres. Agrega que la mujer que fue violada vestía una minifalda y andaba sola de noche por la calle, a pesar de conocer los peligros que esto conlleva.</div>
+      <div class="question-text">¿En cuál afirmación del abogado existe un prejuicio? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q31" value="A"><span class="option-letter">A.</span> La violencia sexual contra las mujeres es frecuente.</label>
+        <label class="option-label"><input type="radio" name="q31" value="B"><span class="option-letter">B.</span> Las mujeres pueden andar solas en la calle de noche.</label>
+        <label class="option-label"><input type="radio" name="q31" value="C"><span class="option-letter">C.</span> También hay hombres que han sido víctimas de violencia sexual.</label>
+        <label class="option-label"><input type="radio" name="q31" value="D"><span class="option-letter">D.</span> Las mujeres se exponen a ser violadas por su forma de vestir.</label>
+      </div>
+    </div>
+
+    <!-- Q32 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 32</div>
+      <div class="question-context">En una propiedad privada se ha encontrado un mineral muy costoso y de alta demanda en el área de la tecnología; al respecto, los propietarios del predio solicitaron la asesoría de unos inversionistas y la aprobación de los permisos emitidos por el Ministerio de Medio Ambiente y Recursos Naturales para poder llevar a cabo la explotación de dicho recurso. Ahora bien, los comunitarios han expresado estar en contra de que ese recurso minero sea explotado, ya que la actividad minera puede contaminar las aguas de los ríos cercanos a la zona; no obstante, la asociación de desarrollo de la comunidad ha expresado estar de acuerdo con la explotación minera.</div>
+      <div class="question-text">De acuerdo con la situación planteada, ¿entre quiénes puede darse un choque de intereses y por qué? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q32" value="A"><span class="option-letter">A.</span> Entre los propietarios y la asociación de desarrollo de la comunidad porque los dos grupos están de acuerdo con la explotación minera.</label>
+        <label class="option-label"><input type="radio" name="q32" value="B"><span class="option-letter">B.</span> Entre los comunitarios y los inversionistas porque ambos grupos tienen intereses distintos.</label>
+        <label class="option-label"><input type="radio" name="q32" value="C"><span class="option-letter">C.</span> Entre los propietarios y los representantes del Estado porque los dos grupos persiguen el mismo objetivo.</label>
+        <label class="option-label"><input type="radio" name="q32" value="D"><span class="option-letter">D.</span> Entre los representantes del Estado y los inversionistas porque los dos grupos persiguen el mismo objetivo.</label>
+      </div>
+    </div>
+
+    <!-- Q33 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 33</div>
+      <div class="question-context">Bajos de Haina es un municipio costero situado en la provincia de San Cristóbal que, desde los años 70, se convirtió en la zona industrial más importante de República Dominicana, debido a su potencial portuario gracias a su cercanía a Santo Domingo. La proliferación de fábricas e industrias de todo tipo hizo de este municipio, un lugar para conseguir empleo. Sin embargo, la falta de control ambiental sobre los residuos generados por las empresas, convirtió a una de sus playas más importantes, Playa Gringo, en una de las zonas costeras con mayor contaminación en el mundo.</div>
+      <div class="question-text">De acuerdo con lo anterior, ¿cuál de las siguientes dimensiones se relaciona con la problemática de contaminación ambiental? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q33" value="A"><span class="option-letter">A.</span> La dimensión cultural, porque se desarrolló la industria del arte y el cine.</label>
+        <label class="option-label"><input type="radio" name="q33" value="B"><span class="option-letter">B.</span> La dimensión política, porque se promovió la importancia política de la ciudad.</label>
+        <label class="option-label"><input type="radio" name="q33" value="C"><span class="option-letter">C.</span> La dimensión social, porque se generó un crecimiento poblacional en el municipio.</label>
+        <label class="option-label"><input type="radio" name="q33" value="D"><span class="option-letter">D.</span> La dimensión económica, porque se privilegió el crecimiento de la industria fabril.</label>
+      </div>
+    </div>
+
+    <!-- Q34 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 34</div>
+      <div class="question-context">"Soñé que un día niños y niñas negros unirían sus manos con niños y niñas blancos como hermanos y hermanas. Hoy he tenido ese sueño." — Fragmento de la obra La Dignidad del Hombre, escrita por Martin Luther King.</div>
+      <div class="question-text">En el párrafo, el autor expresa el deseo de ponerle fin a la discriminación: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q34" value="A"><span class="option-letter">A.</span> social.</label>
+        <label class="option-label"><input type="radio" name="q34" value="B"><span class="option-letter">B.</span> racial.</label>
+        <label class="option-label"><input type="radio" name="q34" value="C"><span class="option-letter">C.</span> política.</label>
+        <label class="option-label"><input type="radio" name="q34" value="D"><span class="option-letter">D.</span> religiosa.</label>
+      </div>
+    </div>
+
+    <!-- Q35 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 35</div>
+      <div class="question-context">Lee con atención los siguientes sucesos: (1) La constitución de la Asamblea Nacional. (2) La abolición de la Monarquía y la proclamación de la República. (3) La declaración de la nueva Constitución. (4) El rey es guillotinado en la plaza de la Revolución.</div>
+      <div class="question-text">Los sucesos planteados anteriormente están asociados con los hechos ocurridos en: <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q35" value="A"><span class="option-letter">A.</span> la caída del Imperio romano de Occidente.</label>
+        <label class="option-label"><input type="radio" name="q35" value="B"><span class="option-letter">B.</span> la Revolución francesa.</label>
+        <label class="option-label"><input type="radio" name="q35" value="C"><span class="option-letter">C.</span> la caída del Imperio otomano.</label>
+        <label class="option-label"><input type="radio" name="q35" value="D"><span class="option-letter">D.</span> la Revolución rusa.</label>
+      </div>
+    </div>
+
+    <!-- Q36 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 36</div>
+      <div class="question-context">Los agricultores de una comunidad del municipio de Cotuí demandan la construcción de un puente que los comunique con la ciudad; al respecto, señalan que no tienen acceso a la ciudad para transportar los productos agrícolas que se cultivan, por lo que exigen a las autoridades la construcción del puente lo más pronto posible. Esta información le ha llegado al presidente a través de un reporte presentado por el Gobernador de la provincia, en el cual se explica que los productos agrícolas se han dañado por falta de vías para transportarlos.</div>
+      <div class="question-text">De acuerdo con la publicación anterior, ¿es confiable la fuente por la que el presidente recibió la información? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q36" value="A"><span class="option-letter">A.</span> Sí, porque el reporte especifica la situación y el lugar del hecho.</label>
+        <label class="option-label"><input type="radio" name="q36" value="B"><span class="option-letter">B.</span> No, porque el gobernador es de otro partido diferente al del presidente.</label>
+        <label class="option-label"><input type="radio" name="q36" value="C"><span class="option-letter">C.</span> No, porque en esa comunidad no hay ríos que ameriten la construcción de un puente.</label>
+        <label class="option-label"><input type="radio" name="q36" value="D"><span class="option-letter">D.</span> Sí, porque el Gobernador vive en el lugar y es el representante del poder Ejecutivo en la provincia.</label>
+      </div>
+    </div>
+
+    <!-- Q37 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 37</div>
+      <div class="question-context">Rainer Maria Rilke. Poeta y novelista, nació en el Imperio Austrohúngaro, en 1875, pero tras su disolución, luego de la Primera Guerra Mundial, vivió en varios países de Europa. Eso sí, siempre en buena compañía y con dinero suficiente. "Mi destino es no tener destino", escribió.</div>
+      <div class="question-text">Dado el texto anterior, ¿a qué concepto alude la expresión "Mi destino es no tener destino"? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q37" value="A"><span class="option-letter">A.</span> Apátrida.</label>
+        <label class="option-label"><input type="radio" name="q37" value="B"><span class="option-letter">B.</span> Nómada.</label>
+        <label class="option-label"><input type="radio" name="q37" value="C"><span class="option-letter">C.</span> Segregación.</label>
+        <label class="option-label"><input type="radio" name="q37" value="D"><span class="option-letter">D.</span> Aculturación.</label>
+      </div>
+    </div>
+
+    <!-- Q38 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 38</div>
+      <div class="question-context">Texto 1: Las sequías ocurren de manera recurrente en el territorio de la República Dominicana, y de acuerdo al Panel Intergubernamental para el Cambio Climático (PICC), sus impactos negativos ponen en evidencia la vulnerabilidad ante ellas debido a que sus efectos arrastran daños de diversas índoles. Texto 2: El porcentaje de la extensión de Puerto Rico con condiciones atípicamente secas se elevó esta semana a 62.7%, lo que se traduce a unos 37 puntos porcentuales por encima del número registrado la semana pasada, reveló este jueves el Monitor de Sequía de Estados Unidos.</div>
+      <div class="question-text">De acuerdo a la descripción anterior, ¿cuál puede ser el factor que explique la sequía en ambos lugares? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q38" value="A"><span class="option-letter">A.</span> Los dos forman parte del arco insular.</label>
+        <label class="option-label"><input type="radio" name="q38" value="B"><span class="option-letter">B.</span> Los dos tienen gran extensión territorial.</label>
+        <label class="option-label"><input type="radio" name="q38" value="C"><span class="option-letter">C.</span> Los dos forman parte de las Antillas Menores.</label>
+        <label class="option-label"><input type="radio" name="q38" value="D"><span class="option-letter">D.</span> Los dos forman parte de franja continental de América.</label>
+      </div>
+    </div>
+
+    <!-- Q39 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 39</div>
+      <div class="question-context">Para la construcción de una nueva línea del Metro de Santo Domingo, con el fin de solucionar la crisis en materia de transporte público que atraviesa la ciudad, se necesita pasar por un terreno que debe ser declarado de utilidad pública y de interés social.</div>
+      <div class="question-text">Según la Constitución dominicana, ¿qué poder tiene la potestad para realizar esa declaración? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q39" value="A"><span class="option-letter">A.</span> Legislativo.</label>
+        <label class="option-label"><input type="radio" name="q39" value="B"><span class="option-letter">B.</span> Municipal.</label>
+        <label class="option-label"><input type="radio" name="q39" value="C"><span class="option-letter">C.</span> Ejecutivo.</label>
+        <label class="option-label"><input type="radio" name="q39" value="D"><span class="option-letter">D.</span> Judicial.</label>
+      </div>
+    </div>
+
+    <!-- Q40 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 40</div>
+      <div class="question-context">"En principio, debemos reconocer que las consecuencias del proceso social que ha estado experimentando la sociedad dominicana desde la década del noventa hasta la actualidad, como son: su integración al mercado global capitalista, la democratización de sus instituciones políticas, la crisis de las instituciones sociales y el auge de los procesos de individualización, afectan directamente la sociedad en general, la esfera pública del Estado, como la vida íntima, familiar, de los individuos y, por supuesto, desequilibran los valores en la sociedad dominicana." — Castillo, W. (2022). Acento.</div>
+      <div class="question-text">¿Qué concepto define el fenómeno descrito anteriormente? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q40" value="A"><span class="option-letter">A.</span> Modernización.</label>
+        <label class="option-label"><input type="radio" name="q40" value="B"><span class="option-letter">B.</span> Etnocentrismo.</label>
+        <label class="option-label"><input type="radio" name="q40" value="C"><span class="option-letter">C.</span> Transculturación.</label>
+        <label class="option-label"><input type="radio" name="q40" value="D"><span class="option-letter">D.</span> Mercantilismo.</label>
+      </div>
+    </div>
+
+    <!-- Q41 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 41</div>
+      <div class="question-context">Los flujos migratorios a través de la historia han presentado cambios o han acentuado las tendencias de ciertas modalidades migratorias y de los perfiles de los migrantes. Un recorrido histórico de este fenómeno de México y Estados Unidos a través de varios períodos entre los cuales están: la era del enganche que se realiza desde sus inicios hasta 1929 con el auge de los ferrocarriles. La era de las deportaciones de 1929 a 1941. La migración en la Segunda Guerra Mundial, por la falta de mano de obra en Estados Unidos. Y por último la era de la inmigración indocumentada que da inicio una vez concluido el programa bracero en 1965.</div>
+      <div class="question-text">De acuerdo a la descripción anterior, ¿qué factor ha incidido en la migración entre ambos países? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q41" value="A"><span class="option-letter">A.</span> Poca preparación de los jóvenes mexicanos.</label>
+        <label class="option-label"><input type="radio" name="q41" value="B"><span class="option-letter">B.</span> Mayores oportunidades de trabajo en los Estados Unidos.</label>
+        <label class="option-label"><input type="radio" name="q41" value="C"><span class="option-letter">C.</span> La garantía de protección de los Derechos Humanos en los Estados Unidos.</label>
+        <label class="option-label"><input type="radio" name="q41" value="D"><span class="option-letter">D.</span> La falta de mano de obra calificada en México.</label>
+      </div>
+    </div>
+
+    <!-- Q42 -->
+    <div class="question-card">
+      <div class="question-number">Pregunta 42</div>
+      <div class="question-context">Tras asumir la presidencia de la República como jefe del gobierno tomó una serie de medidas de tipos económicas, políticas y sociales que incidían de una forma u otra en la población dominicana, entre las cuales se pueden citar las siguientes: Promulgó la Ley de Amnistía a favor de exiliados y los presos políticos. Amplió y fomentó el financiamiento agropecuario a través del Fondo de la Inversión al Desarrollo (FIDE). Creó la Oficina Nacional de Transporte Terrestre (ONATRATE).</div>
+      <div class="question-text">¿A qué período de gobierno corresponden las medidas presentadas anteriormente? <span style="color:#d93025">*</span></div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q42" value="A"><span class="option-letter">A.</span> Antonio Guzmán Fernández 1978-1982.</label>
+        <label class="option-label"><input type="radio" name="q42" value="B"><span class="option-letter">B.</span> Joaquín Balaguer 1966-1978.</label>
+        <label class="option-label"><input type="radio" name="q42" value="C"><span class="option-letter">C.</span> Salvador Jorge Blanco 1982-1986.</label>
+        <label class="option-label"><input type="radio" name="q42" value="D"><span class="option-letter">D.</span> Juan Bosch 1962-1963.</label>
+      </div>
+    </div>
+
+    <div class="submit-area">
+      <button type="button" class="btn-clear" onclick="clearForm()">Borrar respuestas</button>
+      <button type="button" class="btn-submit" onclick="submitQuiz()">Enviar respuestas</button>
+    </div>
+
+  </form>
+
+  <div class="results-card" id="resultsCard">
+    <h2>Respuestas enviadas</h2>
+    <div class="score-circle">
+      <span class="score-number" id="scoreNum">0</span>
+      <span class="score-total" id="scoreTotal">de 42</span>
+    </div>
+    <div class="score-pct" id="scorePct"></div>
+    <p style="font-size:14px;color:#5f6368;margin-top:8px;" id="scoreMsg"></p>
+    <button class="btn-retry" onclick="retryQuiz()">Volver a intentar</button>
+  </div>
+
+</div>
+
+<script>
+const answers = {
+  q1:'B', q2:'B', q3:'D', q4:'D', q5:'A', q6:'A', q7:'D', q8:'B', q9:'A', q10:'A',
+  q11:'C', q12:'B', q13:'C', q14:'B', q15:'B', q16:'D', q17:'B', q18:'D', q19:'B', q20:'B',
+  q21:'C', q22:'D', q23:'D', q24:'C', q25:'B', q26:'B', q27:'C', q28:'D', q29:'C', q30:'C',
+  q31:'D', q32:'B', q33:'D', q34:'B', q35:'B', q36:'D', q37:'A', q38:'A', q39:'C', q40:'A',
+  q41:'B', q42:'A'
+};
+
+const total = 42;
+
+function updateProgress() {
+  let answered = 0;
+  for (let i = 1; i <= total; i++) {
+    if (document.querySelector(`input[name="q${i}"]:checked`)) answered++;
+  }
+  const pct = Math.round((answered / total) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${answered} de ${total} respondidas`;
+}
+
+document.getElementById('quizForm').addEventListener('change', updateProgress);
+
+document.querySelectorAll('.option-label').forEach(label => {
+  label.addEventListener('click', function() {
+    const name = this.querySelector('input').name;
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+      r.closest('.option-label').classList.remove('selected');
+    });
+    this.classList.add('selected');
+  });
+});
+
+function clearForm() {
+  if (!confirm('¿Seguro que deseas borrar todas las respuestas?')) return;
+  document.getElementById('quizForm').reset();
+  document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected', 'correct-answer', 'wrong-answer'));
+  updateProgress();
+}
+
+function submitQuiz() {
+  let unanswered = [];
+  for (let i = 1; i <= total; i++) {
+    if (!document.querySelector(`input[name="q${i}"]:checked`)) unanswered.push(i);
+  }
+  if (unanswered.length > 0) {
+    alert(`Faltan ${unanswered.length} pregunta(s) por responder: ${unanswered.slice(0,5).map(n=>'Pregunta '+n).join(', ')}${unanswered.length>5?'...':''}`);
+    document.querySelectorAll('.question-card')[unanswered[0]-1].scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  let score = 0;
+  for (let i = 1; i <= total; i++) {
+    const key = `q${i}`;
+    const sel = document.querySelector(`input[name="${key}"]:checked`);
+    const userVal = sel ? sel.value : null;
+    const correct = answers[key];
+
+    document.querySelectorAll(`input[name="${key}"]`).forEach(r => {
+      const lbl = r.closest('.option-label');
+      lbl.classList.remove('correct-answer','wrong-answer');
+      if (r.value === correct) lbl.classList.add('correct-answer');
+      else if (r.value === userVal && userVal !== correct) lbl.classList.add('wrong-answer');
+    });
+
+    if (userVal === correct) score++;
+  }
+
+  const pct = Math.round((score / total) * 100);
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('scoreTotal').textContent = `de ${total}`;
+  document.getElementById('scorePct').textContent = `${pct}%`;
+
+  let msg = '';
+  if (pct >= 90) msg = '¡Excelente! Dominas muy bien los temas.';
+  else if (pct >= 75) msg = '¡Muy bien! Tienes un buen manejo de los contenidos.';
+  else if (pct >= 60) msg = 'Buen esfuerzo. Repasa los temas donde fallaste.';
+  else msg = 'Sigue practicando. Revisa las respuestas marcadas en verde.';
+  document.getElementById('scoreMsg').textContent = msg;
+
+  const resultsCard = document.getElementById('resultsCard');
+  resultsCard.style.display = 'block';
+  resultsCard.scrollIntoView({behavior:'smooth'});
+
+  document.getElementById('quizForm').querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+  document.querySelector('.btn-submit').disabled = true;
+  document.querySelector('.btn-clear').disabled = true;
+}
+
+function retryQuiz() {
+  document.getElementById('quizForm').reset();
+  document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected','correct-answer','wrong-answer'));
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+  document.querySelector('.btn-submit').disabled = false;
+  document.querySelector('.btn-clear').disabled = false;
+  document.getElementById('resultsCard').style.display = 'none';
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+updateProgress();
+</script>
+</body>
+</html>
